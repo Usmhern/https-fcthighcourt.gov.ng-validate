@@ -75,13 +75,13 @@ body {
     height: 60px;
 }
 
-/* Each line stays physically fixed */
+/* Each individual line stays in the same position */
 .spinner-line {
+    animation: spinnerFade 1.5s linear infinite;
     transform-origin: 50px 50px;
-    animation: spinnerFade 1.2s linear infinite;
 }
 
-/* Fading moves around the circle */
+/* Stagger each line */
 .spinner-line:nth-child(1)  { animation-delay: 0s; }
 .spinner-line:nth-child(2)  { animation-delay: -0.1s; }
 .spinner-line:nth-child(3)  { animation-delay: -0.2s; }
@@ -97,7 +97,7 @@ body {
 
 @keyframes spinnerFade {
 
-    0% {
+    0%, 100% {
         opacity: 0.08;
     }
 
@@ -105,9 +105,6 @@ body {
         opacity: 1;
     }
 
-    100% {
-        opacity: 0.08;
-    }
 }
 /* =====================================================
    VERIFICATION CARD
