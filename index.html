@@ -1,0 +1,57 @@
+<!doctype html>
+<html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Affidavit Generator</title>
+<script src="https://cdn.jsdelivr.net/npm/qrcodejs/qrcode.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<style>
+body{margin:0;padding:20px;background:linear-gradient(#fff,lightyellow);font-family:Arial;display:flex;flex-direction:column;align-items:center}#controls{width:800px;max-width:95%;padding:15px;background:#168;color:white;display:flex;gap:12px;flex-wrap:wrap;box-shadow:0 2px 10px #555}.g{display:flex;flex-direction:column;font-size:12px}.g input{width:180px}#paper{width:800px;height:1131px;margin-top:30px;background:#fff;position:relative;overflow:hidden;box-shadow:0 0 20px #555}.layer{position:absolute;z-index:2}#letter{position:absolute;width:100%;height:100%;object-fit:fill;z-index:0}#passport{top:185px;right:59px;width:67px;height:70px;object-fit:cover}#sign{top:628px;left:635px;width:90px;height:36px;object-fit:contain;mix-blend-mode:multiply}#body{top:327px;left:130px;width:610px;font:11pt/1.7 "Times New Roman";text-align:justify}#date{top:625px;left:130px;font:10pt/1.6 "Times New Roman"}#code{top:775px;left:242px;font:bold 8.8pt "Times New Roman"}#qr{top:756px;left:155px;width:85px;height:85px;background:#fff;padding:4px}#qr img,#qr canvas{width:77px!important;height:77px!important}.btn{margin:8px;padding:10px 18px;border:0;border-radius:8px;font-weight:bold;cursor:pointer}.status{font-weight:bold;margin:10px;color:#168}
+</style></head><body>
+<h1 style="color:#168">VIRTUAL COURT</h1>
+<div id="controls">
+<div class="g">LETTERHEAD<input id="letterUpload" type="file" accept="image/*"></div>
+<div class="g">PASSPORT<input id="passportUpload" type="file" accept="image/*"></div>
+<div class="g">SIGNATURE<input id="signUpload" type="file" accept="image/*"></div>
+</div>
+<div id="paper">
+<img id="letter">
+<img id="passport" class="layer">
+<div id="body" class="layer" contenteditable="true">I, Abdulkarim Sani, Male, Muslim Nigerian Citizen, residing in Kututture, Katsina State, do hereby declare on oath and state as follows:<br><br>1. That I am the above-named person with Passport No: <b>B04226267</b>, and the deponent in this affidavit.<br><br>2. That I am the Husband of Fatima Osogba Yahaya, who is currently living in Saudi Arabia, and I wish to travel to visit her in Saudi Arabia for a family visit.<br><br>3. That I depose to this affidavit in good faith and for record purposes, in accordance with the provisions of the Oaths Act, 2004.</div>
+<div id="date" class="layer">Sworn to at the High Court of Justice<br>Jabi, Federal Capital Territory (FCT) this <span id="day"></span> day of <span id="month"></span>, <span id="year"></span></div>
+<img id="sign" class="layer">
+<div id="qr" class="layer"></div><b><div id="code" class="layer"></div></b>
+</div>
+<div>
+<button class="btn" style="background:#3498db;color:#fff" onclick="png()">PNG</button>
+<button class="btn" style="background:#e74c3c;color:#fff" onclick="pdf()">PDF</button>
+<button class="btn" style="background:#27ae60;color:#fff" onclick="save()">SAVE</button>
+</div>
+<div class="status" id="status"></div>
+<script>
+const API="https://script.google.com/macros/s/AKfycbyEuV12OX8wwjXVc253x1GR8JW8eKYW9SVG34RBfmzgLHxpad4bLnUKXt-fFnnWp9FTQg/exec";
+const VERIFY="https://usmhern.github.io/AFDVT/verify.html";
+const ALPH="ABCDEFGHJKLMNPQRSTUVWXYZ23456789",LEN=9;
+let data={passport:"",sign:"",letter:""},lastCode="";
+function newCode(){let c;do{c="";let a=new Uint8Array(LEN);crypto.getRandomValues(a);for(let x of a)c+=ALPH[x%ALPH.length]}while(c===lastCode);lastCode=c;return c}
+function codeChanged(){const c=newCode();document.getElementById("code").textContent=c;document.getElementById("qr").innerHTML="";new QRCode(document.getElementById("qr"),{text:VERIFY+"?id="+encodeURIComponent(c),width:77,height:77,colorDark:"#000",colorLight:"#fff",correctLevel:QRCode.CorrectLevel.H});}
+function fileRead(input,cb){let f=input.files[0];if(!f)return;let r=new FileReader();r.onload=e=>cb(e.target.result,f.type);r.readAsDataURL(f)}
+function setupDate(){let d=new Date(),m=["January","February","March","April","May","June","July","August","September","October","November","December"],n=d.getDate(),s=n%10===1&&n!==11?"st":n%10===2&&n!==12?"nd":n%10===3&&n!==13?"rd":"th";day.textContent=n+s;month.textContent=m[d.getMonth()];year.textContent=d.getFullYear()}
+letterUpload.onchange=()=>fileRead(letterUpload,(x)=>{data.letter=x;letter.src=x;codeChanged()});
+passportUpload.onchange=()=>fileRead(passportUpload,(x,t)=>{data.passport=x;passport.src=x;codeChanged()});
+signUpload.onchange=()=>fileRead(signUpload,(x,t)=>{data.sign=x;sign.src=x;codeChanged()});
+body.oninput=()=>codeChanged();
+function b64(x){return x&&x.includes(",")?x.split(",")[1]:""}
+function mime(x){return x&&x.includes(";")?x.slice(5,x.indexOf(";")):"image/jpeg"}
+function name(){let m=body.innerText.match(/I,\s*([^,]+),/);return m?m[1].trim():"Unknown Deponent"}
+async function save(){
+let c=code.textContent.trim();if(!c)codeChanged(),c=code.textContent.trim();
+if(name()==="Unknown Deponent")throw new Error("Deponent name not found");
+if(!data.passport||!data.sign)throw new Error("Upload passport and signature");
+status.textContent="Saving...";
+let r=await fetch(API,{method:"POST",headers:{"Content-Type":"text/plain;charset=utf-8"},body:JSON.stringify({action:"saveAffidavit",affidavitCode:c,name:name(),text:body.innerHTML,date:day.textContent+" "+month.textContent+" "+year.textContent,passport:b64(data.passport),passportMime:mime(data.passport),signature:b64(data.sign),signatureMime:mime(data.sign)})});
+let j=await r.json();if(!j.success)throw new Error(j.error||"Save failed");status.textContent="Saved successfully ✓";return j
+}
+async function png(){try{await save();let c=await html2canvas(paper,{scale:3,useCORS:true}),a=document.createElement("a");a.download="Affidavit_"+code.textContent+".png";a.href=c.toDataURL();a.click()}catch(e){status.textContent=e.message;alert(e.message)}}
+async function pdf(){try{await save();let c=await html2canvas(paper,{scale:3,useCORS:true}),p=new jspdf.jsPDF({orientation:"portrait",unit:"px",format:[c.width,c.height]});p.addImage(c.toDataURL("image/jpeg",1),"JPEG",0,0,c.width,c.height);p.save("Affidavit_"+code.textContent+".pdf")}catch(e){status.textContent=e.message;alert(e.message)}}
+setupDate();codeChanged();
+</script></body></html>

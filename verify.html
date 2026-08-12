@@ -1,0 +1,17 @@
+<!doctype html>
+<html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Affidavit Validation</title>
+<style>
+body{margin:0;background:#d1d5db;min-height:100vh;display:flex;justify-content:center;align-items:center;font-family:Arial}.card{display:none;background:#fff;padding:40px 30px;border-radius:8px;box-shadow:0 10px 25px #999;max-width:400px;width:77%;text-align:center}.photos{display:flex;justify-content:center;gap:20px;margin-bottom:25px}.pass{width:100px;height:100px;border-radius:50%;overflow:hidden;border:1px solid #ddd}.pass img{width:100%;height:100%;object-fit:cover}.sig{width:100px;height:100px;display:flex;align-items:center;justify-content:center}.sig img{max-width:100%;max-height:100%}.green{color:#27ae60;font-weight:bold}.invalid{color:#e74c3c!important}#loader{position:fixed;inset:0;background:#d1d5db;display:flex;align-items:center;justify-content:center}.spin{width:45px;height:45px;border:6px solid #999;border-top-color:#222;border-radius:50%;animation:s 1s linear infinite}@keyframes s{to{transform:rotate(360deg)}}
+</style></head><body>
+<div id="loader"><div class="spin"></div></div>
+<div class="card" id="card">
+<div class="photos"><div class="pass"><img id="p"></div><div class="sig"><img id="s"></div></div>
+<div>This is a <span class="green">GENERAL FORM OF AFFIDAVIT</span> deposed by <span id="name" class="green">-</span> associated with code <span id="code" class="green">-</span>. It has been <span id="db">found in our database and confirmed as</span><br><span id="valid" class="green">VALID</span></div>
+</div>
+<script>
+const API="https://script.google.com/macros/s/AKfycbyEuV12OX8wwjXVc253x1GR8JW8eKYW9SVG34RBfmzgLHxpad4bLnUKXt-fFnnWp9FTQg/exec";
+const q=new URLSearchParams(location.search),wanted=(q.get("id")||q.get("code")||q.get("affidavitCode")||"").trim().toUpperCase();
+function invalid(){name.textContent="UNKNOWN";code.textContent=wanted||"UNKNOWN";valid.textContent="INVALID";valid.classList.add("invalid");db.textContent="could not be found in our database";p.src="";s.src=""}
+async function verify(){if(!wanted)return invalid();code.textContent=wanted;try{let r=await fetch(API+"?action=verifyAffidavit&id="+encodeURIComponent(wanted)+"&t="+Date.now(),{cache:"no-store"});let j=await r.json();console.log(j);if(!j.success||!j.found)return invalid();let d=j.data||{};name.textContent=d.name||"UNKNOWN";code.textContent=d.affidavitCode||wanted;if(d.passportUrl)p.src=d.passportUrl;if(d.signatureUrl)s.src=d.signatureUrl;db.textContent="found in our database and confirmed as";valid.textContent="VALID";valid.classList.remove("invalid")}catch(e){console.error(e);invalid()}}
+verify();setTimeout(()=>{loader.style.display="none";card.style.display="block"},1100);
+</script></body></html>
