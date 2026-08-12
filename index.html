@@ -1,57 +1,2266 @@
-<!doctype html>
-<html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Affidavit Generator</title>
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+<meta charset="UTF-8">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>Affidavit Layered Generator</title>
+
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@700&display=swap" rel="stylesheet">
+
+<link href="https://fonts.googleapis.com/css2?family=Stardos+Stencil:wght@700&display=swap" rel="stylesheet">
+
 <script src="https://cdn.jsdelivr.net/npm/qrcodejs/qrcode.min.js"></script>
+
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+
 <style>
-body{margin:0;padding:20px;background:linear-gradient(#fff,lightyellow);font-family:Arial;display:flex;flex-direction:column;align-items:center}#controls{width:800px;max-width:95%;padding:15px;background:#168;color:white;display:flex;gap:12px;flex-wrap:wrap;box-shadow:0 2px 10px #555}.g{display:flex;flex-direction:column;font-size:12px}.g input{width:180px}#paper{width:800px;height:1131px;margin-top:30px;background:#fff;position:relative;overflow:hidden;box-shadow:0 0 20px #555}.layer{position:absolute;z-index:2}#letter{position:absolute;width:100%;height:100%;object-fit:fill;z-index:0}#passport{top:185px;right:59px;width:67px;height:70px;object-fit:cover}#sign{top:628px;left:635px;width:90px;height:36px;object-fit:contain;mix-blend-mode:multiply}#body{top:327px;left:130px;width:610px;font:11pt/1.7 "Times New Roman";text-align:justify}#date{top:625px;left:130px;font:10pt/1.6 "Times New Roman"}#code{top:775px;left:242px;font:bold 8.8pt "Times New Roman"}#qr{top:756px;left:155px;width:85px;height:85px;background:#fff;padding:4px}#qr img,#qr canvas{width:77px!important;height:77px!important}.btn{margin:8px;padding:10px 18px;border:0;border-radius:8px;font-weight:bold;cursor:pointer}.status{font-weight:bold;margin:10px;color:#168}
-</style></head><body>
-<h1 style="color:#168">VIRTUAL COURT</h1>
-<div id="controls">
-<div class="g">LETTERHEAD<input id="letterUpload" type="file" accept="image/*"></div>
-<div class="g">PASSPORT<input id="passportUpload" type="file" accept="image/*"></div>
-<div class="g">SIGNATURE<input id="signUpload" type="file" accept="image/*"></div>
-</div>
-<div id="paper">
-<img id="letter">
-<img id="passport" class="layer">
-<div id="body" class="layer" contenteditable="true">I, Abdulkarim Sani, Male, Muslim Nigerian Citizen, residing in Kututture, Katsina State, do hereby declare on oath and state as follows:<br><br>1. That I am the above-named person with Passport No: <b>B04226267</b>, and the deponent in this affidavit.<br><br>2. That I am the Husband of Fatima Osogba Yahaya, who is currently living in Saudi Arabia, and I wish to travel to visit her in Saudi Arabia for a family visit.<br><br>3. That I depose to this affidavit in good faith and for record purposes, in accordance with the provisions of the Oaths Act, 2004.</div>
-<div id="date" class="layer">Sworn to at the High Court of Justice<br>Jabi, Federal Capital Territory (FCT) this <span id="day"></span> day of <span id="month"></span>, <span id="year"></span></div>
-<img id="sign" class="layer">
-<div id="qr" class="layer"></div><b><div id="code" class="layer"></div></b>
-</div>
-<div>
-<button class="btn" style="background:#3498db;color:#fff" onclick="png()">PNG</button>
-<button class="btn" style="background:#e74c3c;color:#fff" onclick="pdf()">PDF</button>
-<button class="btn" style="background:#27ae60;color:#fff" onclick="save()">SAVE</button>
-</div>
-<div class="status" id="status"></div>
-<script>
-const API="https://script.google.com/macros/s/AKfycby_5UyMfyXI8yZdnrRR4IIh15edCDUw2Nv_IvTuvJZFstAYs18gB0HiIbN4ac5deTo_Mg/exec";
-const VERIFY="https://usmhern.github.io/https-fcthighcourt.gov.ng-validate/verify.html";
-const ALPH="ABCDEFGHJKLMNPQRSTUVWXYZ23456789",LEN=9;
-let data={passport:"",sign:"",letter:""},lastCode="";
-function newCode(){let c;do{c="";let a=new Uint8Array(LEN);crypto.getRandomValues(a);for(let x of a)c+=ALPH[x%ALPH.length]}while(c===lastCode);lastCode=c;return c}
-function codeChanged(){const c=newCode();document.getElementById("code").textContent=c;document.getElementById("qr").innerHTML="";new QRCode(document.getElementById("qr"),{text:VERIFY+"?id="+encodeURIComponent(c),width:77,height:77,colorDark:"#000",colorLight:"#fff",correctLevel:QRCode.CorrectLevel.H});}
-function fileRead(input,cb){let f=input.files[0];if(!f)return;let r=new FileReader();r.onload=e=>cb(e.target.result,f.type);r.readAsDataURL(f)}
-function setupDate(){let d=new Date(),m=["January","February","March","April","May","June","July","August","September","October","November","December"],n=d.getDate(),s=n%10===1&&n!==11?"st":n%10===2&&n!==12?"nd":n%10===3&&n!==13?"rd":"th";day.textContent=n+s;month.textContent=m[d.getMonth()];year.textContent=d.getFullYear()}
-letterUpload.onchange=()=>fileRead(letterUpload,(x)=>{data.letter=x;letter.src=x;codeChanged()});
-passportUpload.onchange=()=>fileRead(passportUpload,(x,t)=>{data.passport=x;passport.src=x;codeChanged()});
-signUpload.onchange=()=>fileRead(signUpload,(x,t)=>{data.sign=x;sign.src=x;codeChanged()});
-body.oninput=()=>codeChanged();
-function b64(x){return x&&x.includes(",")?x.split(",")[1]:""}
-function mime(x){return x&&x.includes(";")?x.slice(5,x.indexOf(";")):"image/jpeg"}
-function name(){let m=body.innerText.match(/I,\s*([^,]+),/);return m?m[1].trim():"Unknown Deponent"}
-async function save(){
-let c=code.textContent.trim();if(!c)codeChanged(),c=code.textContent.trim();
-if(name()==="Unknown Deponent")throw new Error("Deponent name not found");
-if(!data.passport||!data.sign)throw new Error("Upload passport and signature");
-status.textContent="Saving...";
-let r=await fetch(API,{method:"POST",headers:{"Content-Type":"text/plain;charset=utf-8"},body:JSON.stringify({action:"saveAffidavit",affidavitCode:c,name:name(),text:body.innerHTML,date:day.textContent+" "+month.textContent+" "+year.textContent,passport:b64(data.passport),passportMime:mime(data.passport),signature:b64(data.sign),signatureMime:mime(data.sign)})});
-let j=await r.json();if(!j.success)throw new Error(j.error||"Save failed");status.textContent="Saved successfully ✓";return j
+
+/* =========================================================
+   BODY
+   ========================================================= */
+
+body{
+    background-image:linear-gradient(to top,lightyellow,#fff,#fff,#fff);
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    padding:20px;
+    font-family:'Segoe UI',sans-serif;
 }
-async function png(){try{await save();let c=await html2canvas(paper,{scale:3,useCORS:true}),a=document.createElement("a");a.download="Affidavit_"+code.textContent+".png";a.href=c.toDataURL();a.click()}catch(e){status.textContent=e.message;alert(e.message)}}
-async function pdf(){try{await save();let c=await html2canvas(paper,{scale:3,useCORS:true}),p=new jspdf.jsPDF({orientation:"portrait",unit:"px",format:[c.width,c.height]});p.addImage(c.toDataURL("image/jpeg",1),"JPEG",0,0,c.width,c.height);p.save("Affidavit_"+code.textContent+".pdf")}catch(e){status.textContent=e.message;alert(e.message)}}
-setupDate();codeChanged();
-</script></body></html>
+
+
+/* =========================================================
+   CONTROLS
+   ========================================================= */
+
+#controls{
+    background:#168;
+    padding:15px;
+    width:800px;
+    margin-bottom:10px;
+    border-radius:5px;
+    box-shadow:0 2px 10px rgba(0,0,0,0.5);
+    display:flex;
+    gap:15px;
+    align-items:center;
+    flex-wrap:wrap;
+}
+
+.upload-group{
+    display:flex;
+    flex-direction:column;
+    font-size:11px;
+    color:#555;
+    font-weight:bold;
+}
+
+
+/* =========================================================
+   PAPER
+   ========================================================= */
+
+#paper{
+    width:800px;
+    height:1131px;
+    background-size:100% 100%;
+    background-repeat:no-repeat;
+    position:relative;
+    background-color:#fff;
+    box-shadow:0 0 20px rgba(0,0,0,0.8);
+    overflow:hidden;
+    margin-top:50px;
+}
+
+.layer{
+    position:absolute;
+    outline:none;
+}
+
+.editable:hover{
+    background:rgba(0,123,255,0.05);
+    cursor:text;
+    border-radius:3px;
+}
+
+
+/* =========================================================
+   PASSPORT
+   EXACT ORIGINAL POSITION
+   ========================================================= */
+
+#passport-zone{
+    top:185px;
+    right:59px;
+    width:67px;
+    height:70px;
+    border:none;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    background:rgba(255,255,255,0.5);
+}
+
+#passport-img{
+    width:100%;
+    height:100%;
+    object-fit:cover;
+}
+
+
+/* =========================================================
+   SIGNATURE
+   EXACT ORIGINAL POSITION
+   ========================================================= */
+
+#sign-zone{
+    top:628px;
+    left:635px;
+    width:90px;
+    height:36px;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    font-family:"Times New Roman",Times,serif;
+}
+
+#sign-img{
+    max-width:100%;
+    max-height:100%;
+    object-fit:contain;
+    mix-blend-mode:multiply;
+}
+
+
+/* =========================================================
+   MAIN BODY
+   EXACT ORIGINAL POSITION
+   ========================================================= */
+
+#main-body{
+    top:327px;
+    left:130px;
+    width:610px;
+    font-size:11pt;
+    line-height:1.7;
+    text-align:justify;
+    font-family:"Century Schoolbook",
+                "New Century Schoolbook",
+                "Georgia",
+                serif;
+    line-height:1.6;
+}
+
+
+/* =========================================================
+   DATE
+   EXACT ORIGINAL POSITION
+   ========================================================= */
+
+#date-area{
+    font-family:"Century Schoolbook",
+                "New Century Schoolbook",
+                "Georgia",
+                serif;
+    top:625px;
+    left:130px;
+    font-size:10pt;
+    line-height:1.6;
+}
+
+#date-area u{
+    text-decoration:none;
+    border-bottom:1.1px solid black;
+    display:inline-block;
+    height:16.7px;
+    text-align:center;
+}
+
+
+/* =========================================================
+   CODE
+   EXACT ORIGINAL POSITION
+   ========================================================= */
+
+#code-box{
+    top:775px;
+    left:242px;
+    font-family:"Times New Roman";
+    font-weight:bold;
+    font-size:8.8pt;
+    color:black;
+}
+
+
+/* =========================================================
+   QR
+   EXACT ORIGINAL POSITION
+   ========================================================= */
+
+#qr-zone{
+    top:756px;
+    right:608px;
+    width:22px;
+    height:22px;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    background:white;
+    padding:4px;
+}
+
+
+/*
+   QR generated image is 77 × 77
+*/
+
+#qr-zone img,
+#qr-zone canvas{
+    width:77px !important;
+    height:77px !important;
+}
+
+
+/* =========================================================
+   LETTERHEAD
+   ========================================================= */
+
+#letterhead-img{
+    position:absolute;
+    top:0;
+    left:0;
+    width:100%;
+    height:100%;
+    object-fit:fill;
+    z-index:0;
+    pointer-events:none;
+}
+
+
+/* =========================================================
+   BUTTONS
+   ========================================================= */
+
+button{
+    padding:10px 18px;
+    border:none;
+    border-radius:4px;
+    cursor:pointer;
+    font-weight:bold;
+}
+
+.buttonD{
+    border-radius:10px;
+    font-size:15px;
+    width:150px;
+    box-shadow:0px 0px 5px black;
+}
+
+
+input[type="file"]{
+    background:white;
+    height:22px;
+    width:190px;
+    border-radius:0px 10px 10px 0px;
+    box-shadow:inset 0px 0px 5px black;
+    outline:none;
+    margin-left:50px;
+}
+
+
+label{
+    color:lightyellow;
+    margin-left:52px;
+    font-size:20px;
+    font-family:Elephant;
+}
+
+
+/* =========================================================
+   STATUS
+   ========================================================= */
+
+#save-status{
+    margin-top:12px;
+    min-height:25px;
+    text-align:center;
+    font-weight:bold;
+    font-size:15px;
+}
+
+.status-saving{
+    color:#168;
+}
+
+.status-success{
+    color:#168a3d;
+}
+
+.status-error{
+    color:#d63031;
+}
+
+
+/* =========================================================
+   MOBILE
+   ========================================================= */
+
+@media(max-width:850px){
+
+    #controls{
+        width:95%;
+    }
+
+}
+
+</style>
+
+</head>
+
+
+<body>
+
+
+<div>
+    <h1 style="color:#168;">VIRTUAL COURT</h1>
+</div>
+
+
+<!-- =========================================================
+     CONTROLS
+     ========================================================= -->
+
+<div id="controls" style="background:#168;color:#fff;">
+
+    <div class="upload-group">
+
+        <label>LETTER HEAD</label>
+
+        <input
+            type="file"
+            id="upload-letterhead"
+            accept="image/*">
+
+    </div>
+
+
+    <div class="upload-group">
+
+        <label>PASSPORT</label>
+
+        <input
+            type="file"
+            id="upload-passport"
+            accept="image/*">
+
+    </div>
+
+
+    <div class="upload-group">
+
+        <label>SIGNATURE</label>
+
+        <input
+            type="file"
+            id="upload-sign"
+            accept="image/*">
+
+    </div>
+
+</div>
+
+
+<!-- =========================================================
+     PAPER
+     ========================================================= -->
+
+<div id="paper">
+
+
+    <!-- LETTERHEAD -->
+
+    <img
+        id="letterhead-img"
+        src=""
+        alt="Letterhead">
+
+
+    <!-- PASSPORT -->
+
+    <div id="passport-zone" class="layer">
+
+        <img
+            id="passport-img"
+            src=""
+            alt="Passport">
+
+    </div>
+
+
+    <!-- MAIN BODY -->
+
+    <div
+        id="main-body"
+        class="layer editable"
+        contenteditable="true">
+
+I, Abdulkarim Sani, Male, Muslim Nigerian Citizen, residing in Kututture, Katsina State, do hereby declare on oath and state as follows:<br><br>
+
+1. That I am the above-named person with Passport No: <b>B04226267</b>, and the deponent in this affidavit.<br><br>
+
+2. That I am the Husband of Fatima Osogba Yahaya, who is currently living in Saudi Arabia, and I wish to travel to visit her in Saudi Arabia for a family visit.<br><br>
+
+3. That I depose to this affidavit in good faith and for record purposes, in accordance with the provisions of the Oaths Act, 2004.
+
+    </div>
+
+
+    <!-- DATE -->
+
+    <div id="date-area" class="layer">
+
+        Sworn to at the High Court of Justice<br>
+
+        Jabi,
+
+        Federal Capital Territory (FCT) this<br>
+
+        <span id="auto-day"></span>
+
+        day of
+
+        <span id="auto-month"></span>,
+
+        <span id="auto-year"></span>
+
+    </div>
+
+
+    <!-- SIGNATURE -->
+
+    <div id="sign-zone" class="layer">
+
+        <img
+            id="sign-img"
+            src=""
+            alt="Sign">
+
+    </div>
+
+
+    <!-- QR -->
+
+    <div id="qr-zone" class="layer"></div>
+
+
+    <!-- CODE -->
+
+    <b>
+
+        <div id="code-box" class="layer"></div>
+
+    </b>
+
+</div>
+
+
+<!-- =========================================================
+     BUTTONS
+     ========================================================= -->
+
+<center>
+
+<br><br>
+
+<button
+    class="buttonD"
+    onclick="downloadPNG()"
+    style="background:#3498db;color:white;">
+
+    PNG
+
+</button>
+
+&nbsp;&nbsp;&nbsp;&nbsp;
+
+<button
+    class="buttonD"
+    onclick="downloadPDF()"
+    style="background:#e74c3c;color:white;">
+
+    PDF
+
+</button>
+
+&nbsp;&nbsp;&nbsp;&nbsp;
+
+<button
+    class="buttonD"
+    onclick="downloadMultiPDF()"
+    style="background:#27ae60;color:white;">
+
+    Multiple PDF
+
+</button>
+
+
+<br><br>
+
+
+<button
+    class="buttonD"
+    onclick="prevPage()"
+    style="background:#8e44ad;color:white;">
+
+    ««Previous
+
+</button>
+
+&nbsp;&nbsp;&nbsp;
+
+<button
+    class="buttonD"
+    onclick="nextPage()"
+    style="background:#16a085;color:white;">
+
+    Next »»
+
+</button>
+
+
+<br><br>
+
+
+<div
+    style="
+        margin-top:10px;
+        font-weight:bold;
+        color:#168;
+    ">
+
+    Page:
+
+    <span id="page-indicator">1</span>
+
+</div>
+
+
+<div id="save-status"></div>
+
+
+</center>
+
+
+<br>
+
+
+<div class="upload-group">
+
+    <input
+        type="number"
+        id="page-count"
+        min="1"
+        max="50"
+        value="1"
+        style="
+            width:80px;
+            text-align:center;
+            font-size:30px;
+            border-radius:50px;
+        ">
+
+</div>
+
+
+<script>
+
+/* =========================================================
+   CONFIGURATION
+   ========================================================= */
+
+
+/*
+ * IMPORTANT:
+ *
+ * Replace this with the URL of the Apps Script deployment
+ * that contains the matching Code.gs.
+ */
+
+const APPS_SCRIPT_URL =
+"https://script.google.com/macros/s/AKfycby_5UyMfyXI8yZdnrRR4IIh15edCDUw2Nv_IvTuvJZFstAYs18gB0HiIbN4ac5deTo_Mg/exec";
+
+
+/*
+ * YOUR VERIFY PAGE
+ */
+
+const VERIFY_URL =
+"https://usmhern.github.io/https-fcthighcourt.gov.ng-validate/verify.html";
+
+
+/* =========================================================
+   GLOBAL VARIABLES
+   ========================================================= */
+
+let pageData = [];
+
+let dynamicIndex = 0;
+
+let globalLetterhead = "";
+
+let saving = false;
+
+
+/* =========================================================
+   ELEMENTS
+   ========================================================= */
+
+const uploadLetterhead =
+document.getElementById("upload-letterhead");
+
+const uploadPassport =
+document.getElementById("upload-passport");
+
+const uploadSign =
+document.getElementById("upload-sign");
+
+const letterheadImg =
+document.getElementById("letterhead-img");
+
+const passportImg =
+document.getElementById("passport-img");
+
+const signImg =
+document.getElementById("sign-img");
+
+const mainBody =
+document.getElementById("main-body");
+
+const dateArea =
+document.getElementById("date-area");
+
+const codeBox =
+document.getElementById("code-box");
+
+const qrZone =
+document.getElementById("qr-zone");
+
+const pageCount =
+document.getElementById("page-count");
+
+const pageIndicator =
+document.getElementById("page-indicator");
+
+const paper =
+document.getElementById("paper");
+
+const statusBox =
+document.getElementById("save-status");
+
+
+/* =========================================================
+   DISABLE PASSPORT AND SIGNATURE UNTIL LETTERHEAD
+   ========================================================= */
+
+uploadPassport.disabled = true;
+
+uploadSign.disabled = true;
+
+
+/* =========================================================
+   STATUS
+   ========================================================= */
+
+function setStatus(
+    text,
+    type=""
+){
+
+    statusBox.textContent = text;
+
+    statusBox.className = "";
+
+    if(type){
+
+        statusBox.classList.add(type);
+
+    }
+
+}
+
+
+/* =========================================================
+   FILE READER
+   ========================================================= */
+
+function readFileAsDataURL(file){
+
+    return new Promise(
+        function(resolve,reject){
+
+            const reader =
+            new FileReader();
+
+            reader.onload =
+            function(e){
+
+                resolve(e.target.result);
+
+            };
+
+            reader.onerror =
+            function(){
+
+                reject(
+                    new Error(
+                        "Unable to read the image."
+                    )
+                );
+
+            };
+
+            reader.readAsDataURL(file);
+
+        }
+    );
+
+}
+
+
+/* =========================================================
+   GET NAME
+   ========================================================= */
+
+function getPersonName(){
+
+    const text =
+    mainBody.innerText.trim();
+
+
+    /*
+     * Matches:
+     *
+     * I, Abdulkarim Sani, Male...
+     */
+
+    let match =
+    text.match(
+        /I,\s*([^,\n]+?)\s*,\s*(Male|Female)\b/i
+    );
+
+
+    if(match){
+
+        return match[1].trim();
+
+    }
+
+
+    /*
+     * Backup
+     */
+
+    match =
+    text.match(
+        /I,\s*([^,\n]+)/i
+    );
+
+
+    if(match){
+
+        return match[1].trim();
+
+    }
+
+
+    return "Unknown Deponent";
+
+}
+
+
+/* =========================================================
+   RANDOM CODE
+   =========================================================
+   
+   IMPORTANT:
+   NO NAME LETTERS.
+   
+   The code is completely random.
+   
+   ========================================================= */
+
+const CODE_ALPHABET =
+"ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
+
+const CODE_LENGTH = 9;
+
+
+function generateRandomCode(){
+
+    let result = "";
+
+    const randomValues =
+    new Uint8Array(
+        CODE_LENGTH
+    );
+
+
+    crypto.getRandomValues(
+        randomValues
+    );
+
+
+    for(
+        let i=0;
+        i<CODE_LENGTH;
+        i++
+    ){
+
+        result +=
+        CODE_ALPHABET[
+            randomValues[i] %
+            CODE_ALPHABET.length
+        ];
+
+    }
+
+
+    return result;
+
+}
+
+
+/* =========================================================
+   GENERATE PAGE CODE
+   ========================================================= */
+
+function generatePageCode(){
+
+    /*
+     * If the page already has a code,
+     * NEVER replace it.
+     */
+
+    if(
+        pageData[dynamicIndex] &&
+        pageData[dynamicIndex].code
+    ){
+
+        codeBox.textContent =
+        pageData[dynamicIndex].code;
+
+        updateQR(
+            pageData[dynamicIndex].code
+        );
+
+        return;
+    }
+
+
+    const code =
+    generateRandomCode();
+
+
+    pageData[dynamicIndex].code =
+    code;
+
+
+    codeBox.textContent =
+    code;
+
+
+    updateQR(code);
+
+}
+
+
+/* =========================================================
+   QR CODE
+   ========================================================= */
+
+function updateQR(code){
+
+    qrZone.innerHTML = "";
+
+
+    if(!code){
+
+        return;
+
+    }
+
+
+    const verificationURL =
+    VERIFY_URL +
+    "?id=" +
+    encodeURIComponent(code);
+
+
+    new QRCode(
+        qrZone,
+        {
+
+            text:
+            verificationURL,
+
+            width:
+            77,
+
+            height:
+            77,
+
+            /*
+             * EXACT PREVIOUS QR COLOR
+             */
+
+            colorDark:
+            "#1a7f33",
+
+            colorLight:
+            "#ffffff",
+
+            correctLevel:
+            QRCode.CorrectLevel.H
+
+        }
+    );
+
+}
+
+
+/* =========================================================
+   DATE
+   ========================================================= */
+
+function updateDate(){
+
+    const now =
+    new Date();
+
+
+    const months = [
+
+        "January",
+        "February",
+        "March",
+        "April",
+        "May",
+        "June",
+        "July",
+        "August",
+        "September",
+        "October",
+        "November",
+        "December"
+
+    ];
+
+
+    const day =
+    now.getDate();
+
+
+    let suffix = "th";
+
+
+    if(
+        day === 1 ||
+        day === 21 ||
+        day === 31
+    ){
+
+        suffix = "st";
+
+    }
+
+    else if(
+        day === 2 ||
+        day === 22
+    ){
+
+        suffix = "nd";
+
+    }
+
+    else if(
+        day === 3 ||
+        day === 23
+    ){
+
+        suffix = "rd";
+
+    }
+
+
+    const dateObject = {
+
+        day:
+        day + suffix,
+
+        month:
+        months[now.getMonth()],
+
+        year:
+        now.getFullYear()
+
+    };
+
+
+    document.getElementById(
+        "auto-day"
+    ).textContent =
+    dateObject.day;
+
+
+    document.getElementById(
+        "auto-month"
+    ).textContent =
+    dateObject.month;
+
+
+    document.getElementById(
+        "auto-year"
+    ).textContent =
+    dateObject.year;
+
+
+    pageData[dynamicIndex].date =
+    dateObject;
+
+}
+
+
+/* =========================================================
+   INITIALIZE PAGES
+   ========================================================= */
+
+function initPages(){
+
+    const count =
+    Math.max(
+        1,
+        Math.min(
+            50,
+            parseInt(pageCount.value) || 1
+        )
+    );
+
+
+    pageCount.value = count;
+
+
+    const originalText =
+    mainBody.innerHTML;
+
+
+    pageData = [];
+
+
+    for(
+        let i=0;
+        i<count;
+        i++
+    ){
+
+        pageData.push({
+
+            text:
+            originalText,
+
+            passport:
+            "",
+
+            signature:
+            "",
+
+            code:
+            "",
+
+            name:
+            "",
+
+            date:
+            null
+
+        });
+
+    }
+
+
+    dynamicIndex = 0;
+
+}
+
+
+/* =========================================================
+   SAVE CURRENT PAGE IN MEMORY
+   ========================================================= */
+
+function saveCurrentPage(){
+
+    if(
+        !pageData[dynamicIndex]
+    ){
+
+        return;
+
+    }
+
+
+    pageData[dynamicIndex].text =
+    mainBody.innerHTML;
+
+
+    pageData[dynamicIndex].passport =
+    passportImg.src || "";
+
+
+    pageData[dynamicIndex].signature =
+    signImg.src || "";
+
+
+    /*
+     * Keep existing code.
+     */
+
+    pageData[dynamicIndex].code =
+    codeBox.textContent.trim();
+
+
+    pageData[dynamicIndex].name =
+    getPersonName();
+
+
+    pageData[dynamicIndex].date = {
+
+        day:
+        document.getElementById(
+            "auto-day"
+        ).textContent,
+
+        month:
+        document.getElementById(
+            "auto-month"
+        ).textContent,
+
+        year:
+        document.getElementById(
+            "auto-year"
+        ).textContent
+
+    };
+
+}
+
+
+/* =========================================================
+   LOAD PAGE
+   ========================================================= */
+
+function loadPage(index){
+
+    if(
+        pageData.length === 0
+    ){
+
+        return;
+
+    }
+
+
+    saveCurrentPage();
+
+
+    if(index < 0){
+
+        index =
+        pageData.length - 1;
+
+    }
+
+
+    if(
+        index >= pageData.length
+    ){
+
+        index = 0;
+
+    }
+
+
+    dynamicIndex = index;
+
+
+    const page =
+    pageData[index];
+
+
+    /*
+     * TEXT
+     */
+
+    mainBody.innerHTML =
+    page.text || "";
+
+
+    /*
+     * PASSPORT
+     */
+
+    passportImg.src =
+    page.passport || "";
+
+
+    /*
+     * SIGNATURE
+     */
+
+    signImg.src =
+    page.signature || "";
+
+
+    /*
+     * LETTERHEAD
+     */
+
+    if(globalLetterhead){
+
+        letterheadImg.src =
+        globalLetterhead;
+
+    }
+
+
+    /*
+     * DATE
+     */
+
+    if(page.date){
+
+        document.getElementById(
+            "auto-day"
+        ).textContent =
+        page.date.day;
+
+
+        document.getElementById(
+            "auto-month"
+        ).textContent =
+        page.date.month;
+
+
+        document.getElementById(
+            "auto-year"
+        ).textContent =
+        page.date.year;
+
+    }
+
+    else{
+
+        updateDate();
+
+    }
+
+
+    /*
+     * CODE
+     */
+
+    if(page.code){
+
+        codeBox.textContent =
+        page.code;
+
+        updateQR(page.code);
+
+    }
+
+    else{
+
+        generatePageCode();
+
+    }
+
+
+    /*
+     * PAGE NUMBER
+     */
+
+    pageIndicator.textContent =
+    index + 1;
+
+}
+
+
+/* =========================================================
+   NEXT PAGE
+   ========================================================= */
+
+function nextPage(){
+
+    saveCurrentPage();
+
+    loadPage(
+        dynamicIndex + 1
+    );
+
+}
+
+
+/* =========================================================
+   PREVIOUS PAGE
+   ========================================================= */
+
+function prevPage(){
+
+    saveCurrentPage();
+
+    loadPage(
+        dynamicIndex - 1
+    );
+
+}
+
+
+/* =========================================================
+   LETTERHEAD UPLOAD
+   ========================================================= */
+
+uploadLetterhead.addEventListener(
+    "change",
+    async function(){
+
+        const file =
+        this.files[0];
+
+
+        if(!file){
+
+            return;
+
+        }
+
+
+        try{
+
+            globalLetterhead =
+            await readFileAsDataURL(file);
+
+
+            letterheadImg.src =
+            globalLetterhead;
+
+
+            /*
+             * Enable passport and signature.
+             */
+
+            uploadPassport.disabled =
+            false;
+
+            uploadSign.disabled =
+            false;
+
+
+            /*
+             * DO NOT regenerate code.
+             */
+
+        }
+
+        catch(error){
+
+            alert(
+                error.message
+            );
+
+        }
+
+    }
+);
+
+
+/* =========================================================
+   PASSPORT UPLOAD
+   ========================================================= */
+
+uploadPassport.addEventListener(
+    "change",
+    async function(){
+
+        const file =
+        this.files[0];
+
+
+        if(!file){
+
+            return;
+
+        }
+
+
+        try{
+
+            const image =
+            await readFileAsDataURL(file);
+
+
+            passportImg.src =
+            image;
+
+
+            pageData[dynamicIndex].passport =
+            image;
+
+
+            /*
+             * DO NOT CHANGE CODE.
+             */
+
+        }
+
+        catch(error){
+
+            alert(
+                error.message
+            );
+
+        }
+
+    }
+);
+
+
+/* =========================================================
+   SIGNATURE UPLOAD
+   ========================================================= */
+
+uploadSign.addEventListener(
+    "change",
+    async function(){
+
+        const file =
+        this.files[0];
+
+
+        if(!file){
+
+            return;
+
+        }
+
+
+        try{
+
+            const image =
+            await readFileAsDataURL(file);
+
+
+            signImg.src =
+            image;
+
+
+            pageData[dynamicIndex].signature =
+            image;
+
+
+            /*
+             * DO NOT CHANGE CODE.
+             */
+
+        }
+
+        catch(error){
+
+            alert(
+                error.message
+            );
+
+        }
+
+    }
+);
+
+
+/* =========================================================
+   TEXT EDITING
+   ========================================================= */
+
+mainBody.addEventListener(
+    "input",
+    function(){
+
+        pageData[dynamicIndex].text =
+        this.innerHTML;
+
+
+        pageData[dynamicIndex].name =
+        getPersonName();
+
+
+        /*
+         * VERY IMPORTANT:
+         *
+         * No generatePageCode() here.
+         *
+         * Therefore editing the text does
+         * NOT change the affidavit code.
+         */
+
+    }
+);
+
+
+/* =========================================================
+   PAGE COUNT
+   ========================================================= */
+
+pageCount.addEventListener(
+    "change",
+    function(){
+
+        const oldData =
+        [...pageData];
+
+
+        const count =
+        Math.max(
+            1,
+            Math.min(
+                50,
+                parseInt(this.value) || 1
+            )
+        );
+
+
+        this.value =
+        count;
+
+
+        /*
+         * Rebuild pages while preserving
+         * existing pages where possible.
+         */
+
+        const newPages = [];
+
+
+        for(
+            let i=0;
+            i<count;
+            i++
+        ){
+
+            if(oldData[i]){
+
+                newPages.push(
+                    oldData[i]
+                );
+
+            }
+
+            else{
+
+                newPages.push({
+
+                    text:
+                    mainBody.innerHTML,
+
+                    passport:
+                    "",
+
+                    signature:
+                    "",
+
+                    code:
+                    "",
+
+                    name:
+                    "",
+
+                    date:
+                    null
+
+                });
+
+            }
+
+        }
+
+
+        pageData =
+        newPages;
+
+
+        dynamicIndex = 0;
+
+
+        loadPage(0);
+
+    }
+);
+
+
+/* =========================================================
+   BASE64
+   ========================================================= */
+
+function getBase64(dataURL){
+
+    if(
+        !dataURL
+    ){
+
+        return "";
+
+    }
+
+
+    const comma =
+    dataURL.indexOf(",");
+
+
+    if(comma >= 0){
+
+        return dataURL.substring(
+            comma + 1
+        );
+
+    }
+
+
+    return dataURL;
+
+}
+
+
+/* =========================================================
+   MIME
+   ========================================================= */
+
+function getMime(dataURL){
+
+    if(
+        !dataURL
+    ){
+
+        return "image/jpeg";
+
+    }
+
+
+    const match =
+    dataURL.match(
+        /^data:([^;]+);base64,/
+    );
+
+
+    return match
+        ? match[1]
+        : "image/jpeg";
+
+}
+
+
+/* =========================================================
+   SAVE TO GOOGLE APPS SCRIPT
+   ========================================================= */
+
+async function saveToGoogle(){
+
+    saveCurrentPage();
+
+
+    const page =
+    pageData[dynamicIndex];
+
+
+    if(
+        !page.code
+    ){
+
+        generatePageCode();
+
+    }
+
+
+    const personName =
+    getPersonName();
+
+
+    if(
+        personName ===
+        "Unknown Deponent"
+    ){
+
+        throw new Error(
+            "Deponent name could not be detected."
+        );
+
+    }
+
+
+    if(
+        !page.passport
+    ){
+
+        throw new Error(
+            "Please upload the passport."
+        );
+
+    }
+
+
+    if(
+        !page.signature
+    ){
+
+        throw new Error(
+            "Please upload the deponent signature."
+        );
+
+    }
+
+
+    setStatus(
+        "Saving to Google Drive and Google Sheets...",
+        "status-saving"
+    );
+
+
+    const payload = {
+
+        action:
+        "saveAffidavit",
+
+        affidavitCode:
+        page.code,
+
+        code:
+        page.code,
+
+        name:
+        personName,
+
+        text:
+        page.text,
+
+        date:
+        `${page.date.day} ${page.date.month} ${page.date.year}`,
+
+        page:
+        String(dynamicIndex + 1),
+
+        passport:
+        getBase64(page.passport),
+
+        passportBase64:
+        getBase64(page.passport),
+
+        passportMime:
+        getMime(page.passport),
+
+        signature:
+        getBase64(page.signature),
+
+        signatureBase64:
+        getBase64(page.signature),
+
+        signatureMime:
+        getMime(page.signature)
+
+    };
+
+
+    /*
+     * Use text/plain.
+     *
+     * This avoids the browser CORS preflight
+     * problem that can happen with application/json.
+     */
+
+    const response =
+    await fetch(
+        APPS_SCRIPT_URL,
+        {
+
+            method:"POST",
+
+            headers:{
+                "Content-Type":
+                "text/plain;charset=utf-8"
+            },
+
+            body:
+            JSON.stringify(payload)
+
+        }
+    );
+
+
+    const responseText =
+    await response.text();
+
+
+    console.log(
+        "Apps Script response:",
+        responseText
+    );
+
+
+    let result;
+
+
+    try{
+
+        result =
+        JSON.parse(responseText);
+
+    }
+
+    catch(error){
+
+        throw new Error(
+            "Apps Script returned an invalid response: " +
+            responseText
+        );
+
+    }
+
+
+    if(
+        !result.success
+    ){
+
+        throw new Error(
+            result.error ||
+            result.message ||
+            "Google save failed."
+        );
+
+    }
+
+
+    setStatus(
+        "Saved successfully to Google Drive and Google Sheets ✓",
+        "status-success"
+    );
+
+
+    return result;
+
+}
+
+
+/* =========================================================
+   CREATE CANVAS
+   ========================================================= */
+
+async function createAffidavitCanvas(){
+
+    /*
+     * Make absolutely sure QR matches
+     * displayed affidavit code.
+     */
+
+    const code =
+    pageData[dynamicIndex].code;
+
+
+    codeBox.textContent =
+    code;
+
+
+    updateQR(code);
+
+
+    /*
+     * Give QR time to render.
+     */
+
+    await new Promise(
+        function(resolve){
+
+            setTimeout(
+                resolve,
+                250
+            );
+
+        }
+    );
+
+
+    return await html2canvas(
+        paper,
+        {
+
+            scale:3,
+
+            useCORS:true,
+
+            allowTaint:true,
+
+            backgroundColor:"#ffffff",
+
+            logging:false
+
+        }
+    );
+
+}
+
+
+/* =========================================================
+   PNG
+   ========================================================= */
+
+async function downloadPNG(){
+
+    try{
+
+        /*
+         * SAVE FIRST.
+         */
+
+        await saveToGoogle();
+
+
+        /*
+         * THEN DOWNLOAD.
+         */
+
+        const canvas =
+        await createAffidavitCanvas();
+
+
+        const link =
+        document.createElement("a");
+
+
+        link.download =
+        "Affidavit_" +
+        pageData[dynamicIndex].code +
+        ".png";
+
+
+        link.href =
+        canvas.toDataURL(
+            "image/png"
+        );
+
+
+        document.body.appendChild(
+            link
+        );
+
+
+        link.click();
+
+
+        link.remove();
+
+
+        setStatus(
+            "Saved and PNG downloaded successfully ✓",
+            "status-success"
+        );
+
+    }
+
+    catch(error){
+
+        console.error(error);
+
+        setStatus(
+            error.message,
+            "status-error"
+        );
+
+        alert(
+            error.message
+        );
+
+    }
+
+}
+
+
+/* =========================================================
+   PDF
+   ========================================================= */
+
+async function downloadPDF(){
+
+    try{
+
+        /*
+         * SAVE FIRST.
+         */
+
+        await saveToGoogle();
+
+
+        const canvas =
+        await createAffidavitCanvas();
+
+
+        const {
+            jsPDF
+        } =
+        window.jspdf;
+
+
+        const pdf =
+        new jsPDF({
+
+            orientation:
+            "portrait",
+
+            unit:
+            "px",
+
+            format:[
+                canvas.width,
+                canvas.height
+            ]
+
+        });
+
+
+        pdf.addImage(
+
+            canvas.toDataURL(
+                "image/jpeg",
+                1
+            ),
+
+            "JPEG",
+
+            0,
+
+            0,
+
+            canvas.width,
+
+            canvas.height
+
+        );
+
+
+        pdf.save(
+
+            "Affidavit_" +
+            pageData[dynamicIndex].code +
+            ".pdf"
+
+        );
+
+
+        setStatus(
+            "Saved and PDF downloaded successfully ✓",
+            "status-success"
+        );
+
+    }
+
+    catch(error){
+
+        console.error(error);
+
+        setStatus(
+            error.message,
+            "status-error"
+        );
+
+        alert(
+            error.message
+        );
+
+    }
+
+}
+
+
+/* =========================================================
+   MULTIPLE PDF
+   ========================================================= */
+
+async function downloadMultiPDF(){
+
+    try{
+
+        saveCurrentPage();
+
+
+        /*
+         * Save every page first.
+         */
+
+        for(
+            let i=0;
+            i<pageData.length;
+            i++
+        ){
+
+            loadPage(i);
+
+            saveCurrentPage();
+
+            await saveToGoogle();
+
+        }
+
+
+        const {
+            jsPDF
+        } =
+        window.jspdf;
+
+
+        let pdf = null;
+
+
+        /*
+         * Render every page.
+         */
+
+        for(
+            let i=0;
+            i<pageData.length;
+            i++
+        ){
+
+            loadPage(i);
+
+
+            const canvas =
+            await createAffidavitCanvas();
+
+
+            if(i === 0){
+
+                pdf =
+                new jsPDF({
+
+                    orientation:
+                    "portrait",
+
+                    unit:
+                    "px",
+
+                    format:[
+                        canvas.width,
+                        canvas.height
+                    ]
+
+                });
+
+            }
+
+            else{
+
+                pdf.addPage(
+
+                    [
+                        canvas.width,
+                        canvas.height
+                    ],
+
+                    "portrait"
+
+                );
+
+            }
+
+
+            pdf.addImage(
+
+                canvas.toDataURL(
+                    "image/jpeg",
+                    1
+                ),
+
+                "JPEG",
+
+                0,
+
+                0,
+
+                canvas.width,
+
+                canvas.height
+
+            );
+
+        }
+
+
+        pdf.save(
+            "Affidavit_Multi.pdf"
+        );
+
+
+        dynamicIndex = 0;
+
+        loadPage(0);
+
+
+        setStatus(
+            "All pages saved and Multiple PDF downloaded successfully ✓",
+            "status-success"
+        );
+
+    }
+
+    catch(error){
+
+        console.error(error);
+
+        setStatus(
+            error.message,
+            "status-error"
+        );
+
+        alert(
+            error.message
+        );
+
+    }
+
+}
+
+
+/* =========================================================
+   START
+   ========================================================= */
+
+window.addEventListener(
+    "load",
+    function(){
+
+        initPages();
+
+        updateDate();
+
+        loadPage(0);
+
+        /*
+         * First page receives one unique code.
+         */
+
+        generatePageCode();
+
+    }
+);
+
+</script>
+
+</body>
+
+</html>
